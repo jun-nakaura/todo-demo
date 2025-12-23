@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo フロントエンド</title>
+</head>
+<body>
+  <h1>Todo フロントエンド</h1>
+
+  <!-- 入力フォーム -->
+  <label>タイトル: <input id="title" placeholder="例: Spring Bootの練習"></label><br>
+  <label>期限: <input id="dueAt" type="datetime-local"></label><br>
+  <button onclick="addTodo()">Todo追加</button>
+
+  <!-- 一覧表示 -->
+  <h2>Todo一覧</h2>
+  <ul id="todoList"></ul>
+  <button onclick="loadTodos()">一覧を読み込む</button>
+
+  <!-- 結果表示 -->
+  <pre id="result"></pre>
+
+  <script>
+    // Todo追加
+    async function addTodo() {
+      const title = document.getElementById("title").value;
+      const dueAt = document.getElementById("dueAt").value;
+
+      const response = await fetch("http://localhost:8080/api/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title,
+          completed: false,
+          dueAt: dueAt
+        })
+      });
+
+      const data = await response.json();
+      document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+
+      // 追加後に一覧を更新
+      loadTodos();
+    }
+
+    // Todo一覧取得
+    async function loadTodos() {
+      const response = await fetch("http://localhost:8080/api/todos");
+      const todos = await response.json();
+
+      const list = document.getElementById("todoList");
+      list.innerHTML = "";
+
+      todos.forEach(todo => {
+        const item = document.createElement("li");
+
+        // 完了チェックボックス
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = todo.completed;
+        checkbox.onchange = () => updateTodo(todo.id, checkbox.checked);
+
+        // 削除ボタン
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "削除";
+        delBtn.onclick = () => deleteTodo(todo.id);
+
+        item.textContent = `${todo.title}（期限: ${todo.dueAt}） `;
+        item.prepend(checkbox);
+        item.appendChild(delBtn);
+        list.appendChild(item);
+      });
+    }
+
+    // Todo更新（完了状態）
+    async function updateTodo(id, completed) {
+      await fetch(`http://localhost:8080/api/todos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: completed })
+      });
+      loadTodos();
+    }
+
+    // Todo削除
+    async function deleteTodo(id) {
+      await fetch(`http://localhost:8080/api/todos/${id}`, {
+        method: "DELETE"
+      });
+      loadTodos();
+    }
+  </script>
+</body>
+</html>
