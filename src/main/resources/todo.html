@@ -21,12 +21,14 @@
   <pre id="result"></pre>
 
   <script>
+    const BASE_URL = "https://todo-demo-k1vo.onrender.com/api/todos";
+
     // Todo追加
     async function addTodo() {
       const title = document.getElementById("title").value;
       const dueAt = document.getElementById("dueAt").value;
 
-      const response = await fetch("http://localhost:8080/api/todos", {
+      const response = await fetch(BASE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -39,13 +41,12 @@
       const data = await response.json();
       document.getElementById("result").textContent = JSON.stringify(data, null, 2);
 
-      // 追加後に一覧を更新
       loadTodos();
     }
 
     // Todo一覧取得
     async function loadTodos() {
-      const response = await fetch("http://localhost:8080/api/todos");
+      const response = await fetch(BASE_URL);
       const todos = await response.json();
 
       const list = document.getElementById("todoList");
@@ -54,13 +55,11 @@
       todos.forEach(todo => {
         const item = document.createElement("li");
 
-        // 完了チェックボックス
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.checked = todo.completed;
         checkbox.onchange = () => updateTodo(todo.id, checkbox.checked);
 
-        // 削除ボタン
         const delBtn = document.createElement("button");
         delBtn.textContent = "削除";
         delBtn.onclick = () => deleteTodo(todo.id);
@@ -74,7 +73,7 @@
 
     // Todo更新（完了状態）
     async function updateTodo(id, completed) {
-      await fetch(`http://localhost:8080/api/todos/${id}`, {
+      await fetch(`${BASE_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: completed })
@@ -84,7 +83,7 @@
 
     // Todo削除
     async function deleteTodo(id) {
-      await fetch(`http://localhost:8080/api/todos/${id}`, {
+      await fetch(`${BASE_URL}/${id}`, {
         method: "DELETE"
       });
       loadTodos();
