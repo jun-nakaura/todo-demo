@@ -7,4 +7,6 @@ COPY . .
 RUN chmod +x gradlew
 RUN ./gradlew build
 
+EXPOSE 10000
+
 CMD ["java", "-jar", "build/libs/demo-0.0.1-SNAPSHOT.jar"]
